@@ -1,22 +1,23 @@
 {
   "project_name": "Duda Site Exporter",
-  "version": "1.0.0",
-  "current_phase": 1,
-  "phase_name": "MVP Implementation",
+  "version": "1.1.0",
+  "current_phase": 2,
+  "phase_name": "Performance & Visuals",
   "status": "active",
   "last_updated": "2026-01-09",
-  "completion_percentage": 90,
+  "completion_percentage": 50,
   "completed_tasks": [
-    "1.1: Project Setup - package.json, .env.example, tsconfig, Next.js config",
-    "1.2: Supabase Config - Migration files for jobs & logs tables",
-    "1.3: Redis/Queue Setup - lib/queue.ts, lib/redis.ts with BullMQ",
-    "1.4: Scraper Worker (Core) - worker/scraper.ts with Playwright logic",
-    "1.5: ZIP Generation - worker/archiver.ts for folder structure",
-    "1.6: Frontend UI - Dashboard, Auth, Components",
-    "1.7: API Routes - POST /api/jobs, GET /api/jobs/[id]"
+    "1.1: Project Setup",
+    "1.2: Supabase Config",
+    "1.3: Redis/Queue Setup",
+    "1.4: Scraper Worker (Core)",
+    "1.5: ZIP Generation",
+    "1.6: Frontend UI",
+    "1.7: Deployment"
   ],
   "pending_tasks": [
-    "1.7: Deploy to Railway (Web, Worker, Redis)"
+    "2.1: Distributed Scraping (Multi-Worker)",
+    "2.2: Visual Archiving (Screenshots)"
   ],
   "architectural_decisions": [
     "Use Playwright for scraping accuracy",
@@ -26,5 +27,5 @@
     "Turndown for HTML to Markdown conversion"
   ],
   "blockers": [],
-  "next_milestone": "Deploy to Railway and test full flow"
+  "next_milestone": "Implement Multi-Worker Scraping Logic"
 }

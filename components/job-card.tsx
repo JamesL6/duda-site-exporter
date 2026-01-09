@@ -131,6 +131,7 @@ export function JobCard({ jobId, onRemove }: JobCardProps) {
           </div>
         )}
 
+        {/* Only show error if status is EXPLICITLY failed */}
         {job.status === 'failed' && job.errorMessage && (
           <div className="rounded-md bg-destructive/10 p-3">
             <p className="text-sm text-destructive">{job.errorMessage}</p>
