@@ -1,0 +1,30 @@
+{
+  "project_name": "Duda Site Exporter",
+  "version": "1.0.0",
+  "current_phase": 1,
+  "phase_name": "MVP Implementation",
+  "status": "active",
+  "last_updated": "2026-01-09",
+  "completion_percentage": 90,
+  "completed_tasks": [
+    "1.1: Project Setup - package.json, .env.example, tsconfig, Next.js config",
+    "1.2: Supabase Config - Migration files for jobs & logs tables",
+    "1.3: Redis/Queue Setup - lib/queue.ts, lib/redis.ts with BullMQ",
+    "1.4: Scraper Worker (Core) - worker/scraper.ts with Playwright logic",
+    "1.5: ZIP Generation - worker/archiver.ts for folder structure",
+    "1.6: Frontend UI - Dashboard, Auth, Components",
+    "1.7: API Routes - POST /api/jobs, GET /api/jobs/[id]"
+  ],
+  "pending_tasks": [
+    "1.7: Deploy to Railway (Web, Worker, Redis)"
+  ],
+  "architectural_decisions": [
+    "Use Playwright for scraping accuracy",
+    "Use Redis/BullMQ for async job processing",
+    "Use Supabase for Auth and Storage",
+    "Use Next.js 14 App Router for frontend",
+    "Turndown for HTML to Markdown conversion"
+  ],
+  "blockers": [],
+  "next_milestone": "Deploy to Railway and test full flow"
+}

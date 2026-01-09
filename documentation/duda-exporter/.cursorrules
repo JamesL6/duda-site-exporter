@@ -1,0 +1,72 @@
+# Duda Site Exporter - Cursor Rules
+# Mode: Autonomous Agent
+
+## Project Context
+- **Description:** Internal web tool for scraping and exporting content (text/images) from Duda-hosted websites into structured ZIP files.
+- **Stack:** Next.js 14, Supabase (Auth/DB/Storage), Railway (Hosting + Redis), Playwright (Scraping), BullMQ (Queue).
+- **Docs Location:** All documentation in `documentation/duda-exporter/`
+
+## Automatic Context Loading
+
+### When User Mentions "Job" or "Scrape"
+**LOAD:**
+- `03_DATA_MODELS.md` (search for "jobs" table)
+- `04_API_SPECIFICATION.md` (search for "/jobs" endpoints)
+- `09_APP_FLOW.md` (search for "Submit Job" flow)
+
+### When User Mentions "Playwright" or "Crawler"
+**LOAD:**
+- `05_BACKEND_STRUCTURE.md` (search for "Scraping Service")
+- `02_TECH_STACK.md` (search for "Playwright")
+
+### Standard Triggers
+- "What's next?" -> LOAD `10_IMPLEMENTATION_PLAN.md`
+- "error" / "bug" -> LOAD `13_ERROR_CATALOG.md`
+- "deploy" -> LOAD `07_DEVELOPMENT_ENVIRONMENT.md`
+- "security" / "auth" -> LOAD `08_SECURITY_GUIDELINES.md`
+
+## Code Patterns
+
+### Route Handler Pattern (Next.js)
+```typescript
+import { createClient } from '@/utils/supabase/server';
+import { NextResponse } from 'next/server';
+
+export async function POST(request: Request) {
+  const supabase = createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    // Logic here
+    return NextResponse.json({ success: true, data: {} });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+```
+
+### Redis Queue Producer Pattern
+```typescript
+import { Queue } from 'bullmq';
+import { connection } from '@/lib/redis'; // Shared connection
+
+const scrapeQueue = new Queue('scrape-queue', { connection });
+
+export async function addScrapeJob(url: string, userId: string) {
+  return await scrapeQueue.add('scrape-site', { url, userId });
+}
+```
+
+## Doc-Sync Protocol (Mandatory)
+- Schema change -> UPDATE `03_DATA_MODELS.md`
+- API change -> UPDATE `04_API_SPECIFICATION.md`
+- Task complete -> CHECK box in `10_IMPLEMENTATION_PLAN.md`
+
+## Security (Non-Negotiable)
+**NEVER:** Commit `.env` files.
+**NEVER:** Expose Redis credentials in client-side code.
+**ALWAYS:** Verify `user_id` matches the job owner before allowing downloads.

@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = ['...', 'chromium']
+
+[phases.build]
+cmds = ['npm run build', 'npx playwright install chromium --with-deps']
+
+[variables]
+PLAYWRIGHT_BROWSERS_PATH = "/app/.cache/ms-playwright"
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "0"
