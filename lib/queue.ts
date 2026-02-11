@@ -7,17 +7,15 @@ export interface ScrapeJobData {
   userId: string
 }
 
-// Parse Redis URL for BullMQ connection (supports redis:// and rediss:// for Upstash TLS)
+// Parse Redis URL for BullMQ connection (Railway Redis)
 function parseRedisUrl(url: string) {
   try {
     const parsed = new URL(url)
-    const useTls = parsed.protocol === 'rediss:'
     return {
       host: parsed.hostname,
       port: parseInt(parsed.port) || 6379,
       password: parsed.password || undefined,
       username: parsed.username || undefined,
-      ...(useTls && { tls: {} }), // Upstash requires TLS
     }
   } catch {
     return {
@@ -40,6 +38,7 @@ function getScrapeQueue(): Queue<ScrapeJobData> {
         maxRetriesPerRequest: null,
         enableReadyCheck: true,
         connectTimeout: 30000,
+        family: 0, // Railway private network uses IPv6
         retryStrategy: (times) => Math.min(times * 500, 5000),
       },
       defaultJobOptions: {

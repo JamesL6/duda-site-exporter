@@ -3,17 +3,15 @@ import { Worker } from 'bullmq'
 import type { ScrapeJobData } from '@/lib/queue'
 import { processScrapeJob } from './processor'
 
-// Parse Redis URL for BullMQ connection (supports redis:// and rediss:// for Upstash TLS)
+// Parse Redis URL for BullMQ connection (Railway Redis)
 function parseRedisUrl(url: string) {
   try {
     const parsed = new URL(url)
-    const useTls = parsed.protocol === 'rediss:'
     return {
       host: parsed.hostname,
       port: parseInt(parsed.port) || 6379,
       password: parsed.password || undefined,
       username: parsed.username || undefined,
-      ...(useTls && { tls: {} }), // Upstash requires TLS
     }
   } catch {
     return {
@@ -40,6 +38,7 @@ const worker = new Worker<ScrapeJobData>(
       maxRetriesPerRequest: null,
       enableReadyCheck: true,
       connectTimeout: 30000,
+      family: 0, // Railway private network uses IPv6
       retryStrategy: (times) => Math.min(times * 500, 5000),
     },
     concurrency: 5, // Process up to 5 jobs in parallel for bulk support
