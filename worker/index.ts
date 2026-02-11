@@ -36,6 +36,9 @@ const worker = new Worker<ScrapeJobData>(
     connection: {
       ...redisConfig,
       maxRetriesPerRequest: null,
+      enableReadyCheck: true,
+      family: 4, // Force IPv4 for Railway internal networking
+      retryStrategy: (times) => Math.min(times * 500, 5000),
     },
     concurrency: 5, // Process up to 5 jobs in parallel for bulk support
     limiter: {

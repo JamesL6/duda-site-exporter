@@ -37,6 +37,9 @@ function getScrapeQueue(): Queue<ScrapeJobData> {
       connection: {
         ...redisConfig,
         maxRetriesPerRequest: null,
+        enableReadyCheck: true,
+        family: 4, // Force IPv4 for Railway internal networking
+        retryStrategy: (times) => Math.min(times * 500, 5000),
       },
       defaultJobOptions: {
         attempts: 3,
