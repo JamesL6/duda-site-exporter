@@ -6,7 +6,7 @@ import { JobInput } from '@/components/job-input'
 import { JobList } from '@/components/job-list'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileArchive, Globe, Download } from 'lucide-react'
+import { FileArchive, Globe, Download, Layers } from 'lucide-react'
 
 export default function DashboardPage() {
   const [jobIds, setJobIds] = useState<string[]>([])
@@ -35,6 +35,10 @@ export default function DashboardPage() {
     setJobIds((prev) => [jobId, ...prev])
   }
 
+  const handleJobsCreated = (newJobIds: string[]) => {
+    setJobIds((prev) => [...newJobIds, ...prev])
+  }
+
   const handleRemoveJob = (jobId: string) => {
     setJobIds((prev) => prev.filter((id) => id !== jobId))
   }
@@ -50,20 +54,32 @@ export default function DashboardPage() {
             Export Duda Websites
           </h2>
           <p className="mt-2 text-gray-600">
-            Convert any Duda site into clean Markdown and organized images
+            Convert any Duda site into clean Markdown and organized images — one at a time or in bulk
           </p>
         </div>
 
         {/* How it works */}
-        <div className="mb-8 grid gap-4 md:grid-cols-3">
+        <div className="mb-8 grid gap-4 md:grid-cols-4">
           <Card className="bg-white">
             <CardHeader className="pb-2">
               <Globe className="mb-2 h-8 w-8 text-primary" />
-              <CardTitle className="text-lg">1. Enter URL</CardTitle>
+              <CardTitle className="text-lg">1. Enter URLs</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Paste any Duda website URL to begin the export process
+                Paste a single URL or bulk upload a list of sites
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white">
+            <CardHeader className="pb-2">
+              <Layers className="mb-2 h-8 w-8 text-primary" />
+              <CardTitle className="text-lg">2. Parallel Queue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                All sites are queued and processed in parallel by multiple workers
               </CardDescription>
             </CardContent>
           </Card>
@@ -71,11 +87,11 @@ export default function DashboardPage() {
           <Card className="bg-white">
             <CardHeader className="pb-2">
               <FileArchive className="mb-2 h-8 w-8 text-primary" />
-              <CardTitle className="text-lg">2. We Scrape</CardTitle>
+              <CardTitle className="text-lg">3. We Scrape</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Our system crawls all pages and extracts text + images
+                Each site is crawled: pages, text, and images are extracted
               </CardDescription>
             </CardContent>
           </Card>
@@ -83,11 +99,11 @@ export default function DashboardPage() {
           <Card className="bg-white">
             <CardHeader className="pb-2">
               <Download className="mb-2 h-8 w-8 text-primary" />
-              <CardTitle className="text-lg">3. Download ZIP</CardTitle>
+              <CardTitle className="text-lg">4. Download ZIPs</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Get organized Markdown files and images in a clean folder structure
+                Get organized Markdown files and images in clean ZIP archives
               </CardDescription>
             </CardContent>
           </Card>
@@ -98,11 +114,14 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Start New Export</CardTitle>
             <CardDescription>
-              Enter the URL of the Duda website you want to export
+              Enter a single URL or paste a list of URLs to export in bulk
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <JobInput onJobCreated={handleJobCreated} />
+            <JobInput
+              onJobCreated={handleJobCreated}
+              onJobsCreated={handleJobsCreated}
+            />
           </CardContent>
         </Card>
 

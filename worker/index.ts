@@ -37,10 +37,10 @@ const worker = new Worker<ScrapeJobData>(
       ...redisConfig,
       maxRetriesPerRequest: null,
     },
-    concurrency: 2, // Process up to 2 jobs at a time
+    concurrency: 5, // Process up to 5 jobs in parallel for bulk support
     limiter: {
-      max: 5,
-      duration: 60000, // Max 5 jobs per minute
+      max: 15,
+      duration: 60000, // Max 15 jobs per minute to support bulk uploads
     },
   }
 )
