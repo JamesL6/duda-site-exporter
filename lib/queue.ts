@@ -38,7 +38,7 @@ function getScrapeQueue(): Queue<ScrapeJobData> {
         ...redisConfig,
         maxRetriesPerRequest: null,
         enableReadyCheck: true,
-        family: 4, // Force IPv4 for Railway internal networking
+        family: 0, // Let OS choose IPv4/IPv6 for Railway private networking
         retryStrategy: (times) => Math.min(times * 500, 5000),
       },
       defaultJobOptions: {

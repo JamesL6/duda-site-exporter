@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "start:worker": "tsx worker/index.ts",
+    "start:worker": "sleep 3 && tsx worker/index.ts",
     "dev:worker": "tsx watch worker/index.ts"
   },
   "dependencies": {
