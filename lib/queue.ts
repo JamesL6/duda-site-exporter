@@ -7,7 +7,7 @@ export interface ScrapeJobData {
   userId: string
 }
 
-// Parse Redis URL for BullMQ connection (Railway Redis)
+// Parse Redis URL for BullMQ connection
 function parseRedisUrl(url: string) {
   try {
     const parsed = new URL(url)
@@ -18,6 +18,7 @@ function parseRedisUrl(url: string) {
       username: parsed.username || undefined,
     }
   } catch {
+    // Fallback for simple redis://localhost:6379 format
     return {
       host: 'localhost',
       port: 6379,
@@ -36,10 +37,6 @@ function getScrapeQueue(): Queue<ScrapeJobData> {
       connection: {
         ...redisConfig,
         maxRetriesPerRequest: null,
-        enableReadyCheck: true,
-        connectTimeout: 30000,
-        family: 0, // Railway private network uses IPv6
-        retryStrategy: (times) => Math.min(times * 500, 5000),
       },
       defaultJobOptions: {
         attempts: 3,

@@ -3,7 +3,7 @@ import { Worker } from 'bullmq'
 import type { ScrapeJobData } from '@/lib/queue'
 import { processScrapeJob } from './processor'
 
-// Parse Redis URL for BullMQ connection (Railway Redis)
+// Parse Redis URL for BullMQ connection
 function parseRedisUrl(url: string) {
   try {
     const parsed = new URL(url)
@@ -36,10 +36,6 @@ const worker = new Worker<ScrapeJobData>(
     connection: {
       ...redisConfig,
       maxRetriesPerRequest: null,
-      enableReadyCheck: true,
-      connectTimeout: 30000,
-      family: 0, // Railway private network uses IPv6
-      retryStrategy: (times) => Math.min(times * 500, 5000),
     },
     concurrency: 5, // Process up to 5 jobs in parallel for bulk support
     limiter: {
