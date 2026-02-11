@@ -33,8 +33,9 @@ export async function POST() {
       )
     }
 
+    const jobs = (pendingJobs ?? []) as { id: string; target_url: string }[]
     let requeued = 0
-    for (const job of pendingJobs || []) {
+    for (const job of jobs) {
       try {
         await addScrapeJob({
           jobId: job.id,
@@ -49,7 +50,7 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      data: { requeued, total: pendingJobs?.length ?? 0 },
+      data: { requeued, total: jobs.length },
     })
   } catch (error) {
     console.error('Requeue error:', error)

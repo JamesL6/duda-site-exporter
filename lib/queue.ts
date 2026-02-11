@@ -38,7 +38,8 @@ function getScrapeQueue(): Queue<ScrapeJobData> {
         ...redisConfig,
         maxRetriesPerRequest: null,
         enableReadyCheck: true,
-        family: 0, // Let OS choose IPv4/IPv6 for Railway private networking
+        connectTimeout: 30000,
+        family: 0,
         retryStrategy: (times) => Math.min(times * 500, 5000),
       },
       defaultJobOptions: {
