@@ -5,7 +5,6 @@ import { DudaScraper } from './scraper'
 import { createArchive } from './archiver'
 import type { LogInsert, JobUpdate } from '@/types/database'
 import * as tus from 'tus-js-client'
-import fetch from 'node-fetch'
 
 const supabase = createAdminClient()
 
