@@ -16,7 +16,9 @@ async function uploadLargeFile(
   contentType: string
 ): Promise<{ error: Error | null }> {
   return new Promise((resolve) => {
-    const blob = new Blob([file], { type: contentType })
+    // Convert Buffer to Blob - use Uint8Array as intermediate
+    const uint8Array = new Uint8Array(file)
+    const blob = new Blob([uint8Array], { type: contentType })
     const upload = new tus.Upload(blob, {
       endpoint: `https://ezieikaiwauwzrwcxpjt.storage.supabase.co/storage/v1/upload/resumable`,
       retryDelays: [0, 3000, 5000, 10000, 20000],
