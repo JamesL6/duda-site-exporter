@@ -4,8 +4,46 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { DudaScraper } from './scraper'
 import { createArchive } from './archiver'
 import type { LogInsert, JobUpdate } from '@/types/database'
+import * as tus from 'tus-js-client'
+import fetch from 'node-fetch'
 
 const supabase = createAdminClient()
+
+// Use resumable upload for large files (>50MB)
+async function uploadLargeFile(
+  bucket: string,
+  path: string,
+  file: Buffer,
+  contentType: string
+): Promise<{ error: Error | null }> {
+  return new Promise((resolve) => {
+    const upload = new tus.Upload(new Blob([file]), {
+      endpoint: `https://ezieikaiwauwzrwcxpjt.storage.supabase.co/storage/v1/upload/resumable`,
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      headers: {
+        authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'x-upsert': 'true',
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      metadata: {
+        bucketName: bucket,
+        objectName: path,
+        contentType,
+        cacheControl: '3600',
+      },
+      chunkSize: 6 * 1024 * 1024, // 6MB chunks (required by Supabase)
+      onError: (error) => {
+        resolve({ error: error as Error })
+      },
+      onSuccess: () => {
+        resolve({ error: null })
+      },
+    })
+
+    upload.start()
+  })
+}
 
 async function log(jobId: string, level: 'info' | 'warn' | 'error', message: string) {
   console.log(`[${jobId}] [${level.toUpperCase()}] ${message}`)
@@ -48,17 +86,33 @@ export async function processScrapeJob(job: Job<ScrapeJobData>) {
 
     // Upload to Supabase Storage
     const storagePath = `${jobId}/${archive.filename}`
-    await log(jobId, 'info', `Uploading ZIP (${(archive.totalSize / 1024 / 1024).toFixed(2)} MB) to storage...`)
+    const sizeMB = archive.totalSize / 1024 / 1024
+    await log(jobId, 'info', `Uploading ZIP (${sizeMB.toFixed(2)} MB) to storage...`)
 
-    const { error: uploadError } = await supabase.storage
-      .from('exports')
-      .upload(storagePath, archive.buffer, {
-        contentType: 'application/zip',
-        upsert: true,
-      })
+    // Use resumable upload for files >50MB (Pro tier supports up to 50GB)
+    if (archive.totalSize > 50 * 1024 * 1024) {
+      await log(jobId, 'info', 'Using resumable upload for large file...')
+      const { error: uploadError } = await uploadLargeFile(
+        'exports',
+        storagePath,
+        archive.buffer,
+        'application/zip'
+      )
+      if (uploadError) {
+        throw new Error(`Failed to upload: ${uploadError.message}`)
+      }
+    } else {
+      // Standard upload for files <50MB
+      const { error: uploadError } = await supabase.storage
+        .from('exports')
+        .upload(storagePath, archive.buffer, {
+          contentType: 'application/zip',
+          upsert: true,
+        })
 
-    if (uploadError) {
-      throw new Error(`Failed to upload: ${uploadError.message}`)
+      if (uploadError) {
+        throw new Error(`Failed to upload: ${uploadError.message}`)
+      }
     }
 
     // Update job as completed
