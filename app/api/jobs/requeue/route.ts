@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { addScrapeJob } from '@/lib/queue'
 
-// POST /api/jobs/requeue - Re-add pending jobs to the queue (for stuck jobs)
-export async function POST() {
+// POST /api/jobs/requeue - Re-add pending/failed jobs to the queue
+// Query params: ?status=pending|failed|all (default: pending)
+export async function POST(request: Request) {
   try {
     const supabase = await createClient()
 
@@ -19,24 +20,43 @@ export async function POST() {
       )
     }
 
-    const { data: pendingJobs, error } = await supabase
+    const { searchParams } = new URL(request.url)
+    const statusFilter = searchParams.get('status') || 'pending'
+
+    let query = supabase
       .from('jobs')
-      .select('id, target_url')
+      .select('id, target_url, status')
       .eq('user_id', user.id)
-      .eq('status', 'pending')
-      .eq('progress', 0)
+
+    if (statusFilter === 'pending') {
+      query = query.eq('status', 'pending').eq('progress', 0)
+    } else if (statusFilter === 'failed') {
+      query = query.eq('status', 'failed')
+    } else if (statusFilter === 'all') {
+      query = query.in('status', ['pending', 'failed'])
+    }
+
+    const { data: jobsData, error } = await query
 
     if (error) {
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch pending jobs' },
+        { success: false, error: 'Failed to fetch jobs' },
         { status: 500 }
       )
     }
 
-    const jobs = (pendingJobs ?? []) as { id: string; target_url: string }[]
+    const jobs = (jobsData ?? []) as { id: string; target_url: string; status: string }[]
     let requeued = 0
+    
     for (const job of jobs) {
       try {
+        // Reset job to pending status
+        await supabase
+          .from('jobs')
+          .update({ status: 'pending', progress: 0, error_message: null } as never)
+          .eq('id', job.id)
+
+        // Re-add to queue
         await addScrapeJob({
           jobId: job.id,
           targetUrl: job.target_url,
@@ -50,7 +70,7 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      data: { requeued, total: jobs.length },
+      data: { requeued, total: jobs.length, statusFilter },
     })
   } catch (error) {
     console.error('Requeue error:', error)
